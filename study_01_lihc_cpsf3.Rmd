@@ -381,14 +381,16 @@ sample_cluster_tab[names(bar)[bar==2],"edger_clust"] = "edgerB"
 sample_cluster_tab[names(bar)[bar==3],"edger_clust"] = "edgerC"
 sample_cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
 
-table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$rpm)
-table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$edger)
-table(sample_cluster_tab$rpm_clust, sample_cluster_tab$edger)
-table(sample_cluster_tab$rpm40_clust, sample_cluster_tab$edger)
+table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$rpm_clust)
+table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$edger_clust)
+table(sample_cluster_tab$rpm_clust, sample_cluster_tab$edger_clust)
+table(sample_cluster_tab$rpm40_clust, sample_cluster_tab$edger_clust)
 ```
 
-How to conclude?
-Possible to compute **mutual information** or **enthropy** between cluster.
+  - How to conclude?
+  - Possible to compute **mutual information** or **enthropy** between cluster.
+  - Possible to compute survival of each groups cluster.
+
 
 
 
