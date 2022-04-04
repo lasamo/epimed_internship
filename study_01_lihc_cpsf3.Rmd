@@ -1,0 +1,365 @@
+---
+title: "Impact of RNA-seq count normalization on clustering of co-expressed genes"
+author: "Layla Saad Montoya and Florent Chuffart"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+---
+
+```{r, echo=FALSE, eval=TRUE, label="Loading libraries . . ."}
+knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, eval=TRUE, echo=FALSE, results="hide", dpi=75)
+```
+
+
+# Introduction
+
+The goal of this study is ...
+
+
+
+# Data
+
+## Dataset
+
+`raw_counts` is obtained from ...
+
+```{r raw_counts, echo=TRUE, results="verbatim"}
+load("data/lihc_raw_counts.RData")
+raw_counts = lihc_raw_counts
+
+# study_lihc_filename = "tcga_studies/study_TCGA-LIHC_trscr.rds"
+# study_lihc = readRDS(study_lihc_filename)
+# lihc_raw_counts = study_lihc$stuffs$raw_counts
+# raw_counts = lihc_raw_counts
+
+head(raw_counts[,1:4])
+dim(raw_counts)
+```
+
+### Geneset
+
+We will study the toy geneset ...
+
+```{r echo=TRUE}
+features = c(
+  SSU72    = 1,  #    SSU72    29101
+  LSM10    = 2,  #    LSM10    84967
+  SNRPE    = 2,  #    SNRPE     6635
+  CPSF3    = 3,  #    CPSF3    51692
+  SNRPG    = 2,  #    SNRPG     6637
+  WDR33    = 1,  #    WDR33    55339
+  SLBP     = 2,  #     SLBP     7884
+  FIP1L1   = 1,  #   FIP1L1    81608
+  LSM11    = 2,  #    LSM11   134353
+  CASP8AP2 = 2,  # CASP8AP2     9994
+  CPSF4    = 1,  #    CPSF4    10898
+  ERI1     = 2,  #     ERI1    90459
+  CPSF1    = 1,  #    CPSF1    29894
+  CSTF3    = 1,  #    CSTF3     1479
+  CLP1     = 1,  #     CLP1    10978
+  CPSF7    = 1,  #    CPSF7    79869
+  PCF11    = 1,  #    PCF11    51585
+  CPSF6    = 1,  #    CPSF6    11052
+  SNRPF    = 2,  #    SNRPF     6636
+  PABPN1   = 1,  #   PABPN1     8106
+  CPSF2    = 3,  #    CPSF2    53981
+  PAPOLA   = 1,  #   PAPOLA    10914
+  RBBP6    = 1,  #    RBBP6     5930
+  NUDT21   = 1,  #   NUDT21    11051
+  SYMPK    = 3,  #    SYMPK     8189
+  ZNF473   = 2,  #   ZNF473    25888
+  SNRPB    = 2,  #    SNRPB     6628
+  CSTF1    = 1,  #    CSTF1     1477
+  SNRPD3   = 2,  #   SNRPD3     6634
+  CSTF2    = 3   #    CSTF2     1478
+)
+idx_features = names(features)
+```
+
+```{r, fig.height=3}
+plot.new()
+legend("bottomleft", col=c("orange", "yellow", "green"), pch=15, c("complex 1", "complex 1 & 2", "complex 2"), bty="n")
+legend("bottomright", col=c("grey20", "grey80"), pch=15, c("tumoral", "normal"), bty="n")
+```
+
+# RPM
+
+Reads Per Million (RPM) is a transcript expression unit.
+To calculate RPM the formula consists of dividing the number of raw counts by the total number of reads (or library size) and multipliying by a 1 million factor.
+
+## Scaling factors
+
+```{r, eval=TRUE, echo=TRUE}
+rpm_sf = colSums(raw_counts)/10^6
+rpm = t(t(raw_counts)/rpm_sf)
+```
+
+## Heatmap
+
+```{r, eval=TRUE, echo=FALSE, fig.height = 9}
+data = log2(rpm+1)[idx_features,]
+rpm_hm = dmethr::plot_expr_hm(data, 
+  normalization="zscore_rows", 
+  hcmeth_rows="cor"                ,
+  csc=c("grey20", "grey80")[as.numeric(as.factor(substr(colnames(raw_counts), 14,100)%in%"11A"))],
+  rsc=c("orange", "green", "yellow")[features[rownames(data)]],
+  main = "RPM")
+```
+
+
+
+```{r}
+## Clusters
+cluster_tab = data.frame(features)
+bar = cutree(rpm_hm$hc_row, k=4)
+bar
+cluster_tab$rpm_clust = NA
+cluster_tab[names(bar)[bar==1],"rpm_clust"] = "rpmA"
+cluster_tab[names(bar)[bar==2],"rpm_clust"] = "rpmB"
+cluster_tab[names(bar)[bar==3],"rpm_clust"] = "rpmC"
+cluster_tab[names(bar)[bar==4],"rpm_clust"] = "rpmD"
+```
+
+
+
+
+# DESeq2
+
+DESeq2 is a standard normalization method used for differential expression analysis. It is based on the RLE method (Relative Log Expression) and accounts for biases such as sequencing depth, library composition and PCR affinity / RNA composition.
+
+
+## Scaling factors
+
+```{r, eval=TRUE, echo=TRUE}
+colData = data.frame(id=colnames(raw_counts))
+dds = DESeq2::DESeqDataSetFromMatrix(countData=raw_counts, colData=colData, design= ~ 1)
+dds = DESeq2::estimateSizeFactors(dds)
+deseq2_sf = dds$sizeFactor
+deseq2 = t(t(raw_counts)/deseq2_sf)
+```
+
+
+## Heatmap
+
+```{r, fig.height=9}
+data = log2(deseq2+1)[idx_features,]
+deseq2_hm = dmethr::plot_expr_hm(data, 
+  normalization="zscore_rows", 
+  hcmeth_rows="cor"                ,
+  csc=c("grey20", "grey80")[as.numeric(as.factor(substr(colnames(raw_counts), 14,100)%in%"11A"))],
+  rsc=c("orange", "green", "yellow")[features[rownames(data)]], main = "DESeq2")
+```
+
+
+
+```{r}
+## Clusters
+bar = cutree(deseq2_hm$hc_row, k = 4)
+bar
+cluster_tab$deseq2_clust = NA
+cluster_tab[names(bar)[bar==1],"deseq2_clust"] = "deseq2A"
+cluster_tab[names(bar)[bar==2],"deseq2_clust"] = "deseq2B"
+cluster_tab[names(bar)[bar==3],"deseq2_clust"] = "deseq2C"
+cluster_tab[names(bar)[bar==4],"deseq2_clust"] = "deseq2D"
+```
+
+
+
+
+
+
+
+
+
+
+# RPM vs. DESeq2
+
+We compared RPM and DESeq2 clusters
+```{r results="verbatim"}
+table(cluster_tab$rpm_clust, cluster_tab$deseq2_clust)
+```
+
+```{r}
+layout(matrix(1:2,1), respect=TRUE)
+plot(deseq2_sf, rpm_sf)
+abline(a=0, b=40, col=2)
+legend("bottomright", "y=40x", col=2, lty=1)
+plot(deseq2_sf, rpm_sf/40)
+abline(a=0, b=1, col=2)
+legend("bottomright", "y=x", col=2, lty=1)
+layout(matrix(1:2,1), respect=TRUE)
+plot(log2(deseq2[,1]+1), log2(rpm[,1]+1))
+plot(log2(deseq2[,1]+1), log2(40*rpm[,1]+1))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# RPM40
+
+
+```{r, eval=TRUE, echo=TRUE}
+rpm40_sf = rpm_sf/40
+rpm40 = t(t(raw_counts)/rpm40_sf)
+rpm40[1:6, 1:4]
+```
+
+## Heatmap
+
+```{r, eval=TRUE, echo=FALSE, fig.height = 9}
+data = log2(rpm40+1)[idx_features,]
+rpm40_hm = dmethr::plot_expr_hm(data, 
+  normalization="zscore_rows", 
+  hcmeth_rows="cor"                ,
+  csc=c("grey20", "grey80")[as.numeric(as.factor(substr(colnames(raw_counts), 14,100)%in%"11A"))],
+  rsc=c("orange", "green", "yellow")[features[rownames(data)]],
+  main = "RPM40")
+```
+
+
+
+```{r}
+## Clusters
+bar = cutree(rpm40_hm$hc_row, k=4)
+bar
+cluster_tab$rpm40_clust = NA
+cluster_tab[names(bar)[bar==1],"rpm40_clust"] = "rpm40A"
+cluster_tab[names(bar)[bar==2],"rpm40_clust"] = "rpm40B"
+cluster_tab[names(bar)[bar==3],"rpm40_clust"] = "rpm40C"
+cluster_tab[names(bar)[bar==4],"rpm40_clust"] = "rpm40D"
+```
+
+
+
+
+
+
+# RPM40 vs. DESeq2
+
+We compared RPM40 and DESeq2 clusters
+```{r results="verbatim"}
+table(cluster_tab$rpm40_clust, cluster_tab$deseq2_clust)
+```
+
+
+
+
+
+
+
+
+
+
+# EdgeR
+
+EdgeR is a more robust method that competes with DESeq2. EdgeR uses a TMM method to normalize counts (Trimmed Mean of M-values) and accounts for the same biases as DESeq2 such as library composition, sequencing depth and PCR affinity / RNA composition.TMM is a method that calculates size factors by first selecting a reference sample then calculating pseudo size factors using the log of the reference_sample over current sample ratio, and finally trimming the most extreme ratios and most influential genes. This way, EdgeR only takes into account differentially expressed genes and ignores the influence of tissue-specific genes.
+
+## Scaling factors
+
+```{r, eval=TRUE, echo=TRUE}
+edger_sf = edgeR::calcNormFactors(raw_counts, method="TMM")
+edger = t(t(raw_counts)*edger_sf)
+```
+
+## Heatmap
+
+```{r, eval=TRUE, echo=TRUE, fig.height = 9}
+data = log2(edger)[idx_features,]
+edger_hm = dmethr::plot_expr_hm(data, 
+  normalization="zscore_rows", 
+  hcmeth_rows="cor"                ,
+  csc=c("grey20", "grey80")[as.numeric(as.factor(substr(colnames(raw_counts), 14,100)%in%"11A"))],
+  rsc=c("orange", "green", "yellow")[features[rownames(data)]],
+  main = "EdgeR")
+```
+
+```{r}
+## Clusters
+bar = cutree(edger_hm$hc_row, k = 4)
+bar
+cluster_tab$edger_clust = NA
+cluster_tab[names(bar)[bar==1],"edger_clust"] = "edgerA"
+cluster_tab[names(bar)[bar==2],"edger_clust"] = "edgerB"
+cluster_tab[names(bar)[bar==3],"edger_clust"] = "edgerC"
+cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
+```
+
+
+
+
+
+# Comparison
+
+We create a tab in which we input the clustering data.And we create a data-frame with size factors of each method.
+
+
+## Scaling factors correlation
+
+```{r, fig.height=9}
+df_sf = cbind(rpm_sf=rpm_sf, deseq2_sf=deseq2_sf, rpm40_sf=rpm40_sf, edger_sf=edger_sf)
+epimedtools::et_pairs(df_sf)
+```
+
+## Sample 1 correlation
+
+```{r, fig.height=9}
+df_sample1 = cbind(rpm_sample1=rpm[,1], deseq2_sample1=deseq2[,1], rpm40_sample1=rpm40[,1], edger_sample1=edger[,1])
+epimedtools::et_pairs(log(df_sample1+1))
+```
+
+## Clustering
+
+```{r results="verbatim"}
+table(cluster_tab$deseq2_clust, cluster_tab$edger)
+table(cluster_tab$rpm_clust, cluster_tab$edger)
+table(cluster_tab$rpm40_clust, cluster_tab$edger)
+```
+
+```{r, results='asis'}
+rpm_deseq2_clust_table = table(cluster_tab$rpm_clust, cluster_tab$deseq2_clust)
+rpm_edger_clust_table = table(cluster_tab$rpm_clust, cluster_tab$edger_clust)
+edger_deseq2_clust_table = table(cluster_tab$edger_clust, cluster_tab$deseq2_clust)
+rpm40_deseq2_clust_table = table(cluster_tab$rpm40_clust, cluster_tab$deseq2_clust)
+rpm40_edger_clust_table = table(cluster_tab$rpm40_clust, cluster_tab$edger_clust)
+
+knitr::kable(rpm_deseq2_clust_table, align = "c", caption = "RPM vs DESeq2")
+knitr::kable(rpm_edger_clust_table, align = "c", caption = "RPM vs EdgeR")
+knitr::kable(edger_deseq2_clust_table, align = "c", caption = "EdgeR VS DESeq2")
+knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs DESeq2")
+knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs EdgeR")
+```
+
+
+
+
+
+
+
+
+
+## Session Info
+
+```{r, eval=TRUE, echo=TRUE}
+sessionInfo()
+```
