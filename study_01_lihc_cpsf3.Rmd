@@ -405,6 +405,6 @@ epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(edger_hm$hc_col,  k=2)
 
 ## Session Info
 
-```{r, eval=TRUE, echo=TRUE}
+```{r, results="verbatim"}
 sessionInfo()
 ```
