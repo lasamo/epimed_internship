@@ -140,6 +140,7 @@ dds = DESeq2::DESeqDataSetFromMatrix(countData=raw_counts, colData=colData, desi
 dds = DESeq2::estimateSizeFactors(dds)
 deseq2_sf = dds$sizeFactor
 deseq2 = t(t(raw_counts)/deseq2_sf)
+deseq2 = DESeq2::counts(dds, normalized=TRUE)
 ```
 
 
@@ -150,6 +151,7 @@ data = log2(deseq2+1)[idx_features,]
 deseq2_hm = dmethr::plot_expr_hm(data, 
   normalization="zscore_rows", 
   hcmeth_rows="cor"                ,
+  # hcmeth_cols = "cor",
   csc=c("grey20", "grey80")[as.numeric(as.factor(substr(colnames(raw_counts), 14,100)%in%"11A"))],
   rsc=c("orange", "green", "yellow")[features[rownames(data)]], main = "DESeq2")
 ```
@@ -351,7 +353,7 @@ knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs EdgeR")
 ```
 
 
-## Comparing patrient clusters
+## Comparing patient clusters
 
 
 ```{r}
@@ -391,7 +393,14 @@ table(sample_cluster_tab$rpm40_clust, sample_cluster_tab$edger_clust)
   - Possible to compute **mutual information** or **enthropy** between cluster.
   - Possible to compute survival of each groups cluster.
 
+```{r, fig.height=9}
+layout(matrix(1:4,2), respect=TRUE)
+epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm_hm$hc_col,    k=2)[lihc_surival$id_sample]), main="rpm")
+epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(deseq2_hm$hc_col, k=2)[lihc_surival$id_sample]), main="deseq2")
+epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm40_hm$hc_col,  k=2)[lihc_surival$id_sample]), main="rpm40")
+epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(edger_hm$hc_col,  k=2)[lihc_surival$id_sample]), main="edger")
 
+```
 
 
 ## Session Info
