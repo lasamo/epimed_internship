@@ -114,14 +114,14 @@ rpm_hm = dmethr::plot_expr_hm(data,
 
 ```{r}
 ## Clusters
-cluster_tab = data.frame(features)
+gene_cluster_tab = data.frame(features)
 bar = cutree(rpm_hm$hc_row, k=4)
 bar
-cluster_tab$rpm_clust = NA
-cluster_tab[names(bar)[bar==1],"rpm_clust"] = "rpmA"
-cluster_tab[names(bar)[bar==2],"rpm_clust"] = "rpmB"
-cluster_tab[names(bar)[bar==3],"rpm_clust"] = "rpmC"
-cluster_tab[names(bar)[bar==4],"rpm_clust"] = "rpmD"
+gene_cluster_tab$rpm_clust = NA
+gene_cluster_tab[names(bar)[bar==1],"rpm_clust"] = "rpmA"
+gene_cluster_tab[names(bar)[bar==2],"rpm_clust"] = "rpmB"
+gene_cluster_tab[names(bar)[bar==3],"rpm_clust"] = "rpmC"
+gene_cluster_tab[names(bar)[bar==4],"rpm_clust"] = "rpmD"
 ```
 
 
@@ -160,11 +160,11 @@ deseq2_hm = dmethr::plot_expr_hm(data,
 ## Clusters
 bar = cutree(deseq2_hm$hc_row, k = 4)
 bar
-cluster_tab$deseq2_clust = NA
-cluster_tab[names(bar)[bar==1],"deseq2_clust"] = "deseq2A"
-cluster_tab[names(bar)[bar==2],"deseq2_clust"] = "deseq2B"
-cluster_tab[names(bar)[bar==3],"deseq2_clust"] = "deseq2C"
-cluster_tab[names(bar)[bar==4],"deseq2_clust"] = "deseq2D"
+gene_cluster_tab$deseq2_clust = NA
+gene_cluster_tab[names(bar)[bar==1],"deseq2_clust"] = "deseq2A"
+gene_cluster_tab[names(bar)[bar==2],"deseq2_clust"] = "deseq2B"
+gene_cluster_tab[names(bar)[bar==3],"deseq2_clust"] = "deseq2C"
+gene_cluster_tab[names(bar)[bar==4],"deseq2_clust"] = "deseq2D"
 ```
 
 
@@ -180,7 +180,7 @@ cluster_tab[names(bar)[bar==4],"deseq2_clust"] = "deseq2D"
 
 We compared RPM and DESeq2 clusters
 ```{r results="verbatim"}
-table(cluster_tab$rpm_clust, cluster_tab$deseq2_clust)
+table(gene_cluster_tab$rpm_clust, gene_cluster_tab$deseq2_clust)
 ```
 
 ```{r}
@@ -243,11 +243,11 @@ rpm40_hm = dmethr::plot_expr_hm(data,
 ## Clusters
 bar = cutree(rpm40_hm$hc_row, k=4)
 bar
-cluster_tab$rpm40_clust = NA
-cluster_tab[names(bar)[bar==1],"rpm40_clust"] = "rpm40A"
-cluster_tab[names(bar)[bar==2],"rpm40_clust"] = "rpm40B"
-cluster_tab[names(bar)[bar==3],"rpm40_clust"] = "rpm40C"
-cluster_tab[names(bar)[bar==4],"rpm40_clust"] = "rpm40D"
+gene_cluster_tab$rpm40_clust = NA
+gene_cluster_tab[names(bar)[bar==1],"rpm40_clust"] = "rpm40A"
+gene_cluster_tab[names(bar)[bar==2],"rpm40_clust"] = "rpm40B"
+gene_cluster_tab[names(bar)[bar==3],"rpm40_clust"] = "rpm40C"
+gene_cluster_tab[names(bar)[bar==4],"rpm40_clust"] = "rpm40D"
 ```
 
 
@@ -259,7 +259,7 @@ cluster_tab[names(bar)[bar==4],"rpm40_clust"] = "rpm40D"
 
 We compared RPM40 and DESeq2 clusters
 ```{r results="verbatim"}
-table(cluster_tab$rpm40_clust, cluster_tab$deseq2_clust)
+table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$deseq2_clust)
 ```
 
 
@@ -298,11 +298,11 @@ edger_hm = dmethr::plot_expr_hm(data,
 ## Clusters
 bar = cutree(edger_hm$hc_row, k = 4)
 bar
-cluster_tab$edger_clust = NA
-cluster_tab[names(bar)[bar==1],"edger_clust"] = "edgerA"
-cluster_tab[names(bar)[bar==2],"edger_clust"] = "edgerB"
-cluster_tab[names(bar)[bar==3],"edger_clust"] = "edgerC"
-cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
+gene_cluster_tab$edger_clust = NA
+gene_cluster_tab[names(bar)[bar==1],"edger_clust"] = "edgerA"
+gene_cluster_tab[names(bar)[bar==2],"edger_clust"] = "edgerB"
+gene_cluster_tab[names(bar)[bar==3],"edger_clust"] = "edgerC"
+gene_cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
 ```
 
 
@@ -331,17 +331,17 @@ epimedtools::et_pairs(log(df_sample1+1))
 ## Clustering
 
 ```{r results="verbatim"}
-table(cluster_tab$deseq2_clust, cluster_tab$edger)
-table(cluster_tab$rpm_clust, cluster_tab$edger)
-table(cluster_tab$rpm40_clust, cluster_tab$edger)
+table(gene_cluster_tab$deseq2_clust, gene_cluster_tab$edger)
+table(gene_cluster_tab$rpm_clust, gene_cluster_tab$edger)
+table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$edger)
 ```
 
 ```{r, results='asis'}
-rpm_deseq2_clust_table = table(cluster_tab$rpm_clust, cluster_tab$deseq2_clust)
-rpm_edger_clust_table = table(cluster_tab$rpm_clust, cluster_tab$edger_clust)
-edger_deseq2_clust_table = table(cluster_tab$edger_clust, cluster_tab$deseq2_clust)
-rpm40_deseq2_clust_table = table(cluster_tab$rpm40_clust, cluster_tab$deseq2_clust)
-rpm40_edger_clust_table = table(cluster_tab$rpm40_clust, cluster_tab$edger_clust)
+rpm_deseq2_clust_table = table(gene_cluster_tab$rpm_clust, gene_cluster_tab$deseq2_clust)
+rpm_edger_clust_table = table(gene_cluster_tab$rpm_clust, gene_cluster_tab$edger_clust)
+edger_deseq2_clust_table = table(gene_cluster_tab$edger_clust, gene_cluster_tab$deseq2_clust)
+rpm40_deseq2_clust_table = table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$deseq2_clust)
+rpm40_edger_clust_table = table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$edger_clust)
 
 knitr::kable(rpm_deseq2_clust_table, align = "c", caption = "RPM vs DESeq2")
 knitr::kable(rpm_edger_clust_table, align = "c", caption = "RPM vs EdgeR")
@@ -351,10 +351,44 @@ knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs EdgeR")
 ```
 
 
+## Comparing patrient clusters
 
 
+```{r}
+sample_cluster_tab = data.frame(colnames(raw_counts))
+bar = cutree(rpm_hm$hc_col, k=4)
+sample_cluster_tab$rpm_clust = NA
+sample_cluster_tab[names(bar)[bar==1],"rpm_clust"] = "rpmA"
+sample_cluster_tab[names(bar)[bar==2],"rpm_clust"] = "rpmB"
+sample_cluster_tab[names(bar)[bar==3],"rpm_clust"] = "rpmC"
+sample_cluster_tab[names(bar)[bar==4],"rpm_clust"] = "rpmD"
+bar = cutree(deseq2_hm$hc_col, k=4)
+sample_cluster_tab$deseq2_clust = NA
+sample_cluster_tab[names(bar)[bar==1],"deseq2_clust"] = "deseq2A"
+sample_cluster_tab[names(bar)[bar==2],"deseq2_clust"] = "deseq2B"
+sample_cluster_tab[names(bar)[bar==3],"deseq2_clust"] = "deseq2C"
+sample_cluster_tab[names(bar)[bar==4],"deseq2_clust"] = "deseq2D"
+bar = cutree(rpm40_hm$hc_col, k=4)
+sample_cluster_tab$rpm40_clust = NA
+sample_cluster_tab[names(bar)[bar==1],"rpm40_clust"] = "rpm40A"
+sample_cluster_tab[names(bar)[bar==2],"rpm40_clust"] = "rpm40B"
+sample_cluster_tab[names(bar)[bar==3],"rpm40_clust"] = "rpm40C"
+sample_cluster_tab[names(bar)[bar==4],"rpm40_clust"] = "rpm40D"
+bar = cutree(edger_hm$hc_col, k=4)
+sample_cluster_tab$edger_clust = NA
+sample_cluster_tab[names(bar)[bar==1],"edger_clust"] = "edgerA"
+sample_cluster_tab[names(bar)[bar==2],"edger_clust"] = "edgerB"
+sample_cluster_tab[names(bar)[bar==3],"edger_clust"] = "edgerC"
+sample_cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
 
+table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$rpm)
+table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$edger)
+table(sample_cluster_tab$rpm_clust, sample_cluster_tab$edger)
+table(sample_cluster_tab$rpm40_clust, sample_cluster_tab$edger)
+```
 
+How to conclude?
+Possible to compute **mutual information** or **enthropy** between cluster.
 
 
 
