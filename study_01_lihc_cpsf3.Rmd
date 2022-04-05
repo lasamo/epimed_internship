@@ -383,6 +383,8 @@ sample_cluster_tab[names(bar)[bar==2],"edger_clust"] = "edgerB"
 sample_cluster_tab[names(bar)[bar==3],"edger_clust"] = "edgerC"
 sample_cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
 
+```
+```{r results="verbatim"}
 table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$rpm_clust)
 table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$edger_clust)
 table(sample_cluster_tab$rpm_clust, sample_cluster_tab$edger_clust)
@@ -394,11 +396,12 @@ table(sample_cluster_tab$rpm40_clust, sample_cluster_tab$edger_clust)
   - Possible to compute survival of each groups cluster.
 
 ```{r, fig.height=9}
+load("data/lihc_surival.RData")
 layout(matrix(1:4,2), respect=TRUE)
-epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm_hm$hc_col,    k=2)[lihc_surival$id_sample]), main="rpm")
-epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(deseq2_hm$hc_col, k=2)[lihc_surival$id_sample]), main="deseq2")
-epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm40_hm$hc_col,  k=2)[lihc_surival$id_sample]), main="rpm40")
-epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(edger_hm$hc_col,  k=2)[lihc_surival$id_sample]), main="edger")
+epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm_hm$hc_col,    k=2)[lihc_surival$id_sample]), main="rpm", xlab="time (months)")
+epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(deseq2_hm$hc_col, k=2)[lihc_surival$id_sample]), main="deseq2", xlab="time (months)")
+epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm40_hm$hc_col,  k=2)[lihc_surival$id_sample]), main="rpm40", xlab="time (months)")
+epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(edger_hm$hc_col,  k=2)[lihc_surival$id_sample]), main="edger", xlab="time (months)")
 
 ```
 
