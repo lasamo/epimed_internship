@@ -186,7 +186,6 @@ rpm = t(t(raw_counts)/rpm_sf)
 ## Heatmap
 
 ```{r, eval=TRUE, echo=FALSE, fig.height = 9}
-sort(sapply(apply(data, 1, unique), length))
 data = log2(rpm+1)[idx_features,]
 rpm_hm = dmethr::plot_expr_hm(data, colors=c("cyan", "cyan", "cyan", "black", "red", "red", "red"), 
   normalization="zscore_rows", 
