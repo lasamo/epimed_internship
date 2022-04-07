@@ -107,7 +107,6 @@ rpm_hm = dmethr::plot_expr_hm(data,
   main = "RPM")
 ```
 
-
 ```{r}
 ## Clusters
 gene_cluster_tab = data.frame(features)
@@ -148,8 +147,6 @@ deseq2_hm = dmethr::plot_expr_hm(data,
   rsc=c("orange", "green", "yellow")[features[rownames(data)]], main = "DESeq2")
 ```
 
-
-
 ```{r}
 ## Clusters
 bar = cutree(deseq2_hm$hc_row, k = 4)
@@ -161,24 +158,17 @@ gene_cluster_tab[names(bar)[bar==3],"deseq2_clust"] = "deseq2C"
 gene_cluster_tab[names(bar)[bar==4],"deseq2_clust"] = "deseq2D"
 ```
 
-
-
-
-
-
-
-
-
-
 # RPM vs. DESeq2
 
-We proceed to compare both RPM and DESeq2 nmethods against each other in 3 key aspects: Cluster consistency, size factor correlation and raw value transformation.
+We proceed to compare both RPM and DESeq2 methods against each other in 3 key aspects: Cluster consistency, size factor correlation and raw value transformation.
 
 ## Cluster consistency table
 
 ```{r results="verbatim"}
 table(gene_cluster_tab$rpm_clust, gene_cluster_tab$deseq2_clust)
 ```
+
+When compared to each other, RPM and DESeq2 clustering presents us with only two consistent cluster group and one exclusive cluster group corresponding to that of `rpmD` or `deseq2D`. Other clusters contain should contain shared or transferred genes.
 
 ## Size factor correlation
 
@@ -192,6 +182,8 @@ abline(a=0, b=1, col=2)
 legend("bottomright", "y=x", col=2, lty=1)
 ```
 
+In the first plot (left), size factors present a dense and correlated group with a 40-fold factor. This difference is corrected in the second plot (right). 
+
 ## Raw value transformation (per sample)
 
 ```{r}
@@ -200,7 +192,11 @@ plot(log2(deseq2[,1]+1), log2(rpm[,1]+1))
 plot(log2(deseq2[,1]+1), log2(40*rpm[,1]+1))
 ```
 
+A noticeably "crushing" effect is shown in the first plot (left). This crushing effect is caused by the RPM normalization method and affects small raw count values.
+
 # RPM40
+
+We obtain RPM40 counts by dividing the standard RPM size factor by 40: (total_exon_mapped_genes/1M) / 40
 
 ```{r, eval=TRUE, echo=TRUE}
 rpm40_sf = rpm_sf/40
@@ -220,8 +216,6 @@ rpm40_hm = dmethr::plot_expr_hm(data,
   main = "RPM40")
 ```
 
-
-
 ```{r}
 ## Clusters
 bar = cutree(rpm40_hm$hc_row, k=4)
@@ -233,17 +227,14 @@ gene_cluster_tab[names(bar)[bar==3],"rpm40_clust"] = "rpm40C"
 gene_cluster_tab[names(bar)[bar==4],"rpm40_clust"] = "rpm40D"
 ```
 
-
-
-
-
-
 # RPM40 vs. DESeq2
 
 We compared RPM40 and DESeq2 clusters
 ```{r results="verbatim"}
 table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$deseq2_clust)
 ```
+
+After RPM40 normalization, clustering is still overall inconsistent, however, loose genes (a.k.a: genes moving in between clusters) seem to be less distributed in "outlying" groups and the `deseq2D` / `rpm40D` cluster group remains consistent.
 
 # EdgeR
 
@@ -281,8 +272,7 @@ gene_cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
 
 # Comparison
 
-We create a tab in which we input the clustering data.And we create a data-frame with size factors of each method.
-
+We create a tab in which we input the clustering data. And we create a data-frame with size factors of each method.
 
 ## Scaling factors correlation plot
 
@@ -291,12 +281,16 @@ df_sf = cbind(rpm_sf=rpm_sf, deseq2_sf=deseq2_sf, rpm40_sf=rpm40_sf, edger_sf=ed
 epimedtools::et_pairs(df_sf)
 ```
 
+Scaling factors computed using RPM, RPM40 and DESeq2 appear to have a high correlation (R²=0.67), with the highest correlation being that between RPM and RPM40 (R²=1). DESeq2 and EdgeR show a correlation of R²=0.67 but no correlation between EdgeR and both RPM and RPM40.
+
 ## Raw count transformation correlation plot
 
 ```{r, fig.height=9}
 df_sample1 = cbind(rpm_sample1=rpm[,1], deseq2_sample1=deseq2[,1], rpm40_sample1=rpm40[,1], edger_sample1=edger[,1])
 epimedtools::et_pairs(log(df_sample1+1))
 ```
+
+The transformed counts show high correlation among all normalization methods with the highest correlation being those between DESeq2, EdgeR and RPM40 (R²=1). The crushing effect appears to only apply to RPM normalization.
 
 ## Clustering consistency tables
 
@@ -317,9 +311,10 @@ knitr::kable(rpm_deseq2_clust_table, align = "c", caption = "RPM vs DESeq2")
 knitr::kable(rpm_edger_clust_table, align = "c", caption = "RPM vs EdgeR")
 knitr::kable(edger_deseq2_clust_table, align = "c", caption = "EdgeR VS DESeq2")
 knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs DESeq2")
-knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs EdgeR")
+knitr::kable(rpm40_edger_clust_table, align = "c", caption = "RPM40 vs EdgeR")
 ```
 
+No consistent clusters observed when comparing EdgeR to any method. Consistent clustering was only observed with DESeq2.
 
 ## Comparing patient clusters
 
@@ -352,16 +347,25 @@ sample_cluster_tab[names(bar)[bar==3],"edger_clust"] = "edgerC"
 sample_cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
 
 ```
+
 ```{r results="verbatim"}
-table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$rpm_clust)
+table(sample_cluster_tab$rpm_clust, sample_cluster_tab$deseq2_clust)
+table(sample_cluster_tab$rpm40_clust, sample_cluster_tab$deseq2_clust)
 table(sample_cluster_tab$deseq2_clust, sample_cluster_tab$edger_clust)
 table(sample_cluster_tab$rpm_clust, sample_cluster_tab$edger_clust)
 table(sample_cluster_tab$rpm40_clust, sample_cluster_tab$edger_clust)
 ```
 
-  - How to conclude?
-  - Possible to compute **mutual information** or **enthropy** between cluster.
-  - Possible to compute survival of each groups cluster.
+ 
+# Conclusion
+
+Clustering among the normalization methods was not consistent and genes were distributed differently among clusters. It was observed that an improvement on consistency can be done by correcting RPM values by a factor of 40, but remain inconsistent. Cluster composition was not studied but can offer an insight on the consistency. We can observe which genes switch clusters and compute the entropy between clusters. We will use a healthy tissue data set and a complex of tissue-specific genes as positive control (See `study_02_nttcga_tsps`).
+
+It is possible to compute survival of each group cluster (?)
+  
+  <!-- - How to conclude? -->
+  <!-- - Possible to compute **mutual information** or **entropy** between cluster. -->
+  <!-- - Possible to compute survival of each groups cluster. -->
 
 ```{r, fig.height=9}
 load("data/lihc_surival.RData")
@@ -370,9 +374,7 @@ epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm_hm$hc_col,    k=2)
 epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(deseq2_hm$hc_col, k=2)[lihc_surival$id_sample]), main="deseq2", xlab="time (months)")
 epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm40_hm$hc_col,  k=2)[lihc_surival$id_sample]), main="rpm40", xlab="time (months)")
 epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(edger_hm$hc_col,  k=2)[lihc_surival$id_sample]), main="edger", xlab="time (months)")
-
 ```
-
 
 ## Session Info
 
