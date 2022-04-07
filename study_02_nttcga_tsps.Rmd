@@ -17,15 +17,13 @@ knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, 
 
 # Introduction
 
-The goal of this study is ...
-
-
+The goal of this study is to first identify then quantify the differences between normalization methods and their subsequent gene clustering. We wish to highlight the mathematical basis for these differences as well as the ways in which these methods affect the raw results.
 
 # Data
 
 ## Dataset
 
-`raw_counts` is obtained from ...
+The dataset raw_counts is obtained from the NTTCGA group of TCGA database. TCGA (The Cancer Genome Atlas) is a worldwide database containing sequenced cell and tissue samples, and their respective genomic, epigenomic, transcriptomic, and proteomic data. Clincal data as well as survival data and follow-up are equally available. Our data consists of healthy, non-tumorous tissue samples, to be used as a positive control.
 
 ```{r raw_counts, echo=TRUE, results="verbatim"}
 load("data/nttcga_raw_counts.RData")
@@ -36,7 +34,7 @@ dim(raw_counts)
 
 ### Geneset
 
-We will study the toy geneset ...
+Our raw dataset, containing 25360 genes, will be reduced to a geneset containing 117 tissue-specific genes belonging to lung, kidney, liver, prostate tissue. This will allow us to confirm the correlation between tissue samples and expressed genes and verify that clustering is consistent.
 
 ```{r echo=TRUE}
 features = c(
@@ -167,14 +165,12 @@ legend("bottomleft", col=c("grey5", "grey35", "grey65", "grey95"), pch=15, paste
 legend("bottomright", col=c("grey5", "grey35", "grey65", "grey95"), pch=15, paste0("Samples ", sort(unique(substr(colnames(raw_counts), 14, 15)))), bty="n")
 ```
 
-csc=c("grey5", "grey35", "grey65", "grey95")[as.numeric(as.factor(substr(colnames(raw_counts), 14, 15)))],
-rsc=c("grey5", "grey35", "grey65", "grey95")[as.numeric(as.factor(features[rownames(data)]))],
-
+#csc=c("grey5", "grey35", "grey65", "grey95")[as.numeric(as.factor(substr(colnames(raw_counts), 14, 15)))],
+#rsc=c("grey5", "grey35", "grey65", "grey95")[as.numeric(as.factor(features[rownames(data)]))],
 
 # RPM
 
-Reads Per Million (RPM) is a transcript expression unit.
-To calculate RPM the formula consists of dividing the number of raw counts by the total number of reads (or library size) and multipliying by a 1 million factor.
+Reads Per Million (RPM) is a transcript expression unit. To calculate RPM the formula consists of dividing the number of raw counts by the total number of reads (or library size) and multipliying by a 1 million factor. This method is commonly used for inter-sample comparisons and as a basic unit of gene expression. This method does not center counts around zero.
 
 ## Scaling factors
 
@@ -214,8 +210,7 @@ gene_cluster_tab[names(bar)[bar==4],"rpm_clust"] = "rpmD"
 
 # DESeq2
 
-DESeq2 is a standard normalization method used for differential expression analysis. It is based on the RLE method (Relative Log Expression) and accounts for biases such as sequencing depth, library composition and PCR affinity / RNA composition.
-
+DESeq2 is a standard normalization method used for differential expression analysis. It is based on the RLE method (Relative Log Expression) and accounts for biases such as sequencing depth, library composition and PCR affinity / RNA composition. DESeq2 is the main normalisation method used in Differential Expression Analysis at the IAB.
 
 ## Scaling factors
 
@@ -267,10 +262,17 @@ gene_cluster_tab[names(bar)[bar==4],"deseq2_clust"] = "deseq2D"
 
 # RPM vs. DESeq2
 
-We compared RPM and DESeq2 clusters
+We proceed to compare both RPM and DESeq2 nmethods against each other in 3 key aspects: Cluster consistency, size factor correlation and raw value transformation.
+
+## Cluster consistency 
+
 ```{r results="verbatim"}
 table(gene_cluster_tab$rpm_clust, gene_cluster_tab$deseq2_clust)
 ```
+
+We observe 4 mostly consistent gene clusters throughout the comparison, with the exception of rpmC$deseq2A, where 1 gene is displaced from each cluster. Clustering is somewhat consistent between these methods.
+
+## Size factor correlation
 
 ```{r}
 layout(matrix(1:2,1), respect=TRUE)
@@ -280,30 +282,19 @@ legend("bottomright", "y=40x", col=2, lty=1)
 plot(deseq2_sf, rpm_sf/40)
 abline(a=0, b=1, col=2)
 legend("bottomright", "y=x", col=2, lty=1)
+```
+
+In this plot, a separation into two main groups is first noticed. Two groups whose values increase at different rates but are positively correlated. On the other hand, we can also observe a 40-fold factor between RPM and DESeq2 size factors, just as in the LIHC study.
+
+## Raw value transformation
+
+```{r}
 layout(matrix(1:2,1), respect=TRUE)
 plot(log2(deseq2[,1]+1), log2(rpm[,1]+1))
 plot(log2(deseq2[,1]+1), log2(40*rpm[,1]+1))
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Finally, we can note that, when it comes to small raw values, the RPM method has a tendency to crush these values. The crushing effect is corrected by normalizing with RPM40 (RPM × 40). 
 
 # RPM40
 
@@ -351,15 +342,6 @@ We compared RPM40 and DESeq2 clusters
 ```{r results="verbatim"}
 table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$deseq2_clust)
 ```
-
-
-
-
-
-
-
-
-
 
 # EdgeR
 
