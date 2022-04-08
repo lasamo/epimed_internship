@@ -23,7 +23,7 @@ The goal of this study is to first identify then quantify the differences betwee
 
 ## Dataset
 
-The dataset raw_counts is obtained from the NTTCGA group of TCGA database. TCGA (The Cancer Genome Atlas) is a worldwide database containing sequenced cell and tissue samples, and their respective genomic, epigenomic, transcriptomic, and proteomic data. Clincal data as well as survival data and follow-up are equally available. Our data consists of healthy, non-tumorous tissue samples, to be used as a positive control.
+The dataset raw_counts is obtained from the NTTCGA group of TCGA database. TCGA (The Cancer Genome Atlas) is a worldwide database containing sequenced cell and tissue samples, and their respective genomic, epigenomic, transcriptomic, and proteomic data. Clincal data as well as survival data and follow-up are equally available. Our data consists of healthy, non-tumorous tissue samples, to be used as a positive control to the LIHC study (see `study_01_lihc_cpsf3`).
 
 ```{r raw_counts, echo=TRUE, results="verbatim"}
 load("data/nttcga_raw_counts.RData")
@@ -34,7 +34,7 @@ dim(raw_counts)
 
 ### Geneset
 
-Our raw dataset, containing 25360 genes, will be reduced to a geneset containing 117 tissue-specific genes belonging to lung, kidney, liver, prostate tissue. This will allow us to confirm the correlation between tissue samples and expressed genes and verify that clustering is consistent.
+Our raw data set, containing 25360 genes, will be reduced to a gene set containing 117 tissue-specific genes belonging to lung, kidney, liver, prostate tissue. This will allow us to confirm the correlation between tissue samples and expressed genes and verify that clustering is consistent.
 
 ```{r echo=TRUE}
 features = c(
@@ -165,12 +165,12 @@ legend("bottomleft", col=c("grey5", "grey35", "grey65", "grey95"), pch=15, paste
 legend("bottomright", col=c("grey5", "grey35", "grey65", "grey95"), pch=15, paste0("Samples ", sort(unique(substr(colnames(raw_counts), 14, 15)))), bty="n")
 ```
 
-#csc=c("grey5", "grey35", "grey65", "grey95")[as.numeric(as.factor(substr(colnames(raw_counts), 14, 15)))],
-#rsc=c("grey5", "grey35", "grey65", "grey95")[as.numeric(as.factor(features[rownames(data)]))],
+<!-- csc=c("grey5", "grey35", "grey65", "grey95")[as.numeric(as.factor(substr(colnames(raw_counts), 14, 15)))], -->
+<!-- rsc=c("grey5", "grey35", "grey65", "grey95")[as.numeric(as.factor(features[rownames(data)]))], -->
 
 # RPM
 
-Reads Per Million (RPM) is a transcript expression unit. To calculate RPM the formula consists of dividing the number of raw counts by the total number of reads (or library size) and multipliying by a 1 million factor. This method is commonly used for inter-sample comparisons and as a basic unit of gene expression. This method does not center counts around zero.
+Reads Per Million (RPM) is a transcript expression unit. To calculate RPM the formula consists of dividing the number of raw counts by the total number of reads (or library size) and multiplying by a 1 million factor. This method is commonly used for inter-sample comparisons and as a basic unit of gene expression. This method does not center counts around zero. 
 
 ## Scaling factors
 
@@ -191,8 +191,6 @@ rpm_hm = dmethr::plot_expr_hm(data, colors=c("cyan", "cyan", "cyan", "black", "r
   main = "RPM")
 ```
 
-
-
 ```{r}
 ## Clusters
 gene_cluster_tab = data.frame(features)
@@ -205,12 +203,9 @@ gene_cluster_tab[names(bar)[bar==3],"rpm_clust"] = "rpmC"
 gene_cluster_tab[names(bar)[bar==4],"rpm_clust"] = "rpmD"
 ```
 
-
-
-
 # DESeq2
 
-DESeq2 is a standard normalization method used for differential expression analysis. It is based on the RLE method (Relative Log Expression) and accounts for biases such as sequencing depth, library composition and PCR affinity / RNA composition. DESeq2 is the main normalisation method used in Differential Expression Analysis at the IAB.
+DESeq2 is a standard normalization method used for differential expression analysis. It is based on the RLE method (Relative Log Expression) and accounts for biases such as sequencing depth, library composition and PCR affinity / RNA composition. DESeq2 is the main normalization method used in Differential Expression Analysis at the IAB.
 
 ## Scaling factors
 
@@ -238,8 +233,6 @@ deseq2_hm = dmethr::plot_expr_hm(data, colors=c("cyan", "cyan", "cyan", "black",
 )
 ```
 
-
-
 ```{r}
 ## Clusters
 bar = cutree(deseq2_hm$hc_row, k = 4)
@@ -251,18 +244,9 @@ gene_cluster_tab[names(bar)[bar==3],"deseq2_clust"] = "deseq2C"
 gene_cluster_tab[names(bar)[bar==4],"deseq2_clust"] = "deseq2D"
 ```
 
-
-
-
-
-
-
-
-
-
 # RPM vs. DESeq2
 
-We proceed to compare both RPM and DESeq2 nmethods against each other in 3 key aspects: Cluster consistency, size factor correlation and raw value transformation.
+We proceed to compare both RPM and DESeq2 methods against each other in 3 key aspects: Cluster consistency, size factor correlation and raw value transformation.
 
 ## Cluster consistency 
 
@@ -270,7 +254,7 @@ We proceed to compare both RPM and DESeq2 nmethods against each other in 3 key a
 table(gene_cluster_tab$rpm_clust, gene_cluster_tab$deseq2_clust)
 ```
 
-We observe 4 mostly consistent gene clusters throughout the comparison, with the exception of rpmC$deseq2A, where 1 gene is displaced from each cluster. Clustering is somewhat consistent between these methods.
+We observe mostly consistent gene clusters throughout the comparison (with the exception of rpmC$deseq2A, where 1 gene is displaced from each cluster), which is to be. 
 
 ## Size factor correlation
 
@@ -284,7 +268,7 @@ abline(a=0, b=1, col=2)
 legend("bottomright", "y=x", col=2, lty=1)
 ```
 
-In this plot, a separation into two main groups is first noticed. Two groups whose values increase at different rates but are positively correlated. On the other hand, we can also observe a 40-fold factor between RPM and DESeq2 size factors, just as in the LIHC study.
+In this plot, a separation into two main groups is first noticed. Two groups whose values increase at different rates but are positively correlated similar to size factor correlation in the LIHC study.
 
 ## Raw value transformation
 
@@ -294,10 +278,11 @@ plot(log2(deseq2[,1]+1), log2(rpm[,1]+1))
 plot(log2(deseq2[,1]+1), log2(40*rpm[,1]+1))
 ```
 
-Finally, we can note that, when it comes to small raw values, the RPM method has a tendency to crush these values. The crushing effect is corrected by normalizing with RPM40 (RPM × 40). 
+Finally, we can note that, when it comes to small raw values, the RPM method maintains the "crushing" effect even in the positive control. [This supports the argument that the crushing effect is inherent to RPM. (?)].
 
 # RPM40
 
+RPM40 counts are obtained by dividing the RPM40 size factors* by 40. This is in order to correct for standard RPM's small-value "crushing" effect.
 
 ```{r, eval=TRUE, echo=TRUE}
 rpm40_sf = rpm_sf/40
@@ -318,8 +303,6 @@ rpm40_hm = dmethr::plot_expr_hm(data, colors=c("cyan", "cyan", "cyan", "black", 
 )
 ```
 
-
-
 ```{r}
 ## Clusters
 bar = cutree(rpm40_hm$hc_row, k=4)
@@ -331,21 +314,19 @@ gene_cluster_tab[names(bar)[bar==3],"rpm40_clust"] = "rpm40C"
 gene_cluster_tab[names(bar)[bar==4],"rpm40_clust"] = "rpm40D"
 ```
 
-
-
-
-
-
 # RPM40 vs. DESeq2
 
-We compared RPM40 and DESeq2 clusters
+## Clustering consistency table
+
 ```{r results="verbatim"}
 table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$deseq2_clust)
 ```
 
+Clustering with RPM40 seems to have a 
+
 # EdgeR
 
-EdgeR is a more robust method that competes with DESeq2. EdgeR uses a TMM method to normalize counts (Trimmed Mean of M-values) and accounts for the same biases as DESeq2 such as library composition, sequencing depth and PCR affinity / RNA composition.TMM is a method that calculates size factors by first selecting a reference sample then calculating pseudo size factors using the log of the reference_sample over current sample ratio, and finally trimming the most extreme ratios and most influential genes. This way, EdgeR only takes into account differentially expressed genes and ignores the influence of tissue-specific genes.
+EdgeR is a more robust method that competes with DESeq2. EdgeR uses a TMM method to normalize counts (Trimmed Mean of M-values) and accounts for the same biases as DESeq2 such as library composition, sequencing depth and PCR affinity / RNA composition.TMM is a method that calculates size factors by first selecting a reference sample then calculating pseudo size factors using the log of the reference_sample over current sample ratio, and finally trimming the most extreme ratios and most influential genes. This way, EdgeR only takes into account differentially expressed genes and ignores the high influence of tissue-specific genes to focus normalization around housekeeping genes.
 
 ## Scaling factors
 
@@ -377,28 +358,24 @@ gene_cluster_tab[names(bar)[bar==3],"edger_clust"] = "edgerC"
 gene_cluster_tab[names(bar)[bar==4],"edger_clust"] = "edgerD"
 ```
 
-
-
-
-
 # Comparison
-
-We create a tab in which we input the clustering data.And we create a data-frame with size factors of each method.
-
-
-## Scaling factors correlation
+## Scaling factors ratio corr plot
 
 ```{r, fig.height=9}
 df_sf = cbind(rpm_sf=rpm_sf, deseq2_sf=deseq2_sf, rpm40_sf=rpm40_sf, edger_sf=edger_sf)
 epimedtools::et_pairs(df_sf)
 ```
 
-## Sample 1 correlation
+In each plot excepting `rpm40_sf` vs `rpm_sf``(because corr = 1) we can observe a phenomena where the ratios of the scaling factors form two distinct groups. ## We can assume this is due to a separation between housekeeping and tissue-specific genes. It is to note that the 40-fold factor is also present when comparing RPM to EdgeR and we can safely assume that an X-fold factor is not due to a difference in the input data but rather due to the normalization method. 
+
+## Raw count transformation corr plot (Sample 1)
 
 ```{r, fig.height=9}
 df_sample1 = cbind(rpm_sample1=rpm[,1], deseq2_sample1=deseq2[,1], rpm40_sample1=rpm40[,1], edger_sample1=edger[,1])
 epimedtools::et_pairs(log(df_sample1+1))
 ```
+
+The small-value "crushing" effect is observed in all comparisons with RPM, with it being the highest when compared to EdgeR. 
 
 ## Clustering
 
@@ -422,11 +399,9 @@ knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs DESeq2")
 knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs EdgeR")
 ```
 
-
 ## Comparing patient clusters
 
-
-```{r}
+```{r, results='asis'}
 sample_cluster_tab = data.frame(colnames(raw_counts))
 bar = cutree(rpm_hm$hc_col, k=4)
 sample_cluster_tab$rpm_clust = NA
