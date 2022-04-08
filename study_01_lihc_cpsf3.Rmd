@@ -367,7 +367,7 @@ It is possible to compute survival of each group cluster (?)
   <!-- - Possible to compute **mutual information** or **entropy** between cluster. -->
   <!-- - Possible to compute survival of each groups cluster. -->
 
-```{r, fig.height=9}
+```{r, fig.width=6, fig.height=6}
 load("data/lihc_surival.RData")
 layout(matrix(1:4,2), respect=TRUE)
 epimedtools::scurve(lihc_surival$os, paste0("grp", cutree(rpm_hm$hc_col,    k=2)[lihc_surival$id_sample]), main="rpm", xlab="time (months)")
