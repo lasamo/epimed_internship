@@ -254,7 +254,7 @@ We proceed to compare both RPM and DESeq2 methods against each other in 3 key as
 table(gene_cluster_tab$rpm_clust, gene_cluster_tab$deseq2_clust)
 ```
 
-We observe mostly consistent gene clusters throughout the comparison (with the exception of rpmC$deseq2A, where 1 gene is displaced from each cluster), which is to be. 
+We observe mostly consistent gene clusters throughout the comparison (with the exception of rpmC$deseq2A, where 1 gene is displaced from each cluster), which is to be expected in the positive control. 
 
 ## Size factor correlation
 
@@ -366,7 +366,7 @@ df_sf = cbind(rpm_sf=rpm_sf, deseq2_sf=deseq2_sf, rpm40_sf=rpm40_sf, edger_sf=ed
 epimedtools::et_pairs(df_sf)
 ```
 
-In each plot excepting `rpm40_sf` vs `rpm_sf``(because corr = 1) we can observe a phenomena where the ratios of the scaling factors form two distinct groups. ## We can assume this is due to a separation between housekeeping and tissue-specific genes. It is to note that the 40-fold factor is also present when comparing RPM to EdgeR and we can safely assume that an X-fold factor is not due to a difference in the input data but rather due to the normalization method. 
+In each plot excepting `rpm40_sf` vs `rpm_sf` (because corr = 1) we can observe a phenomena where the ratios of the scaling factors form two distinct groups. This is due to significant expression differences in the sample tissues. It is to note that a 40-fold factor is also present when comparing RPM to EdgeR and we can safely infer that the X-fold factor depends on the library size of the samples and is specific to the RPM computed data. 
 
 ## Raw count transformation corr plot (Sample 1)
 
