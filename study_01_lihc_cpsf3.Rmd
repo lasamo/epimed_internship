@@ -303,15 +303,15 @@ table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$edger)
 ```{r, results='asis'}
 rpm_deseq2_clust_table = table(gene_cluster_tab$rpm_clust, gene_cluster_tab$deseq2_clust)
 rpm_edger_clust_table = table(gene_cluster_tab$rpm_clust, gene_cluster_tab$edger_clust)
-edger_deseq2_clust_table = table(gene_cluster_tab$edger_clust, gene_cluster_tab$deseq2_clust)
 rpm40_deseq2_clust_table = table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$deseq2_clust)
 rpm40_edger_clust_table = table(gene_cluster_tab$rpm40_clust, gene_cluster_tab$edger_clust)
+deseq2_edger_clust_table = table(gene_cluster_tab$deseq2_clust, gene_cluster_tab$edger_clust)
 
 knitr::kable(rpm_deseq2_clust_table, align = "c", caption = "RPM vs DESeq2")
 knitr::kable(rpm_edger_clust_table, align = "c", caption = "RPM vs EdgeR")
-knitr::kable(edger_deseq2_clust_table, align = "c", caption = "EdgeR VS DESeq2")
 knitr::kable(rpm40_deseq2_clust_table, align = "c", caption = "RPM40 vs DESeq2")
 knitr::kable(rpm40_edger_clust_table, align = "c", caption = "RPM40 vs EdgeR")
+knitr::kable(deseq2_edger_clust_table, align = "c", caption = "DESeq2 VS EdgeR")
 ```
 
 No consistent clusters observed when comparing EdgeR to any method. Consistent clustering was only observed with DESeq2.
