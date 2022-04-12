@@ -238,7 +238,7 @@ After RPM40 normalization, clustering is still overall inconsistent, however, lo
 
 # EdgeR
 
-EdgeR is a more robust method that competes with DESeq2. EdgeR uses a TMM method to normalize counts (Trimmed Mean of M-values) and accounts for the same biases as DESeq2 such as library composition, sequencing depth and PCR affinity / RNA composition.TMM is a method that calculates size factors by first selecting a reference sample then calculating pseudo size factors using the log of the reference_sample over current sample ratio, and finally trimming the most extreme ratios and most influential genes. This way, EdgeR only takes into account differentially expressed genes and ignores the influence of tissue-specific genes.
+EdgeR is a more complex method that competes with DESeq2. EdgeR uses a TMM method to normalize counts (Trimmed Mean of M-values) and accounts for the same biases as DESeq2 such as library composition, sequencing depth and PCR affinity / RNA composition.TMM is a method that calculates size factors by first selecting a reference sample then calculating pseudo size factors using the log of the reference_sample over current sample ratio, and finally trimming the most extreme ratios and most influential genes. This way, EdgeR only takes into account differentially expressed genes and ignores the influence of tissue-specific genes.
 
 ## Scaling factors
 
